@@ -1,0 +1,26 @@
+version: '3'
+services:
+  web:
+    image: node:alpine
+    command: npm run dev
+    volumes:
+      - .:/usr/app/
+    working_dir: /usr/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - mysql
+    environment:
+      NODE_ENV: development
+      DATABASE_URL: mysql://root:pass@localhost/fundimmo
+  mysql:
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306"
+    volumes:
+      - ./mysql:/var/lib/mysql:ro
+    command: --default-authentication-plugin=mysql_native_password
+    environment:
+      MYSQL_ROOT_PASSWORD: pass
+      MYSQL_DATABASE: fundimmo
