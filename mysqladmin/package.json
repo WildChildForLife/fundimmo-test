@@ -1,0 +1,19 @@
+{
+  "name": "mysqladmin",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "nodemon ./index.js",
+    "start": "node ./index.js"
+  },
+  "author": "Youssef El Gharbaoui",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.17.1",
+    "node-mysql-admin": "^0.1.8"
+  },
+  "devDependencies": {
+    "nodemon": "^1.17.3"
+  }
+}
