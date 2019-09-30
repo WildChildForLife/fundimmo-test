@@ -5,7 +5,6 @@ CREATE DATABASE IF NOT EXISTS fundimmo CHARACTER SET = 'utf8' COLLATE 'utf8_gene
 USE fundimmo;
 
 DROP TABLE IF EXISTS `countries`;
-
 CREATE TABLE `countries` (
     `id` int(9) unsigned NOT NULL AUTO_INCREMENT,
     `name` varchar(255) NULL,
@@ -32,5 +31,16 @@ CREATE TABLE `countries` (
     `flag` text NULL,
     `regionalBlocs` text NULL,
     `cioc` varchar(255) NULL,
+    PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+
+DROP TABLE IF EXISTS `logs`;
+CREATE TABLE `logs` (
+    `id` int(11) NOT NULL AUTO_INCREMENT,
+    `createdAt` datetime NOT NULL,
+    `ip` varchar(255) NOT NULL,
+    `type` varchar(10) NOT NULL,
+    `url` varchar(255) NOT NULL,
+    `status` int(11) NOT NULL,
     PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;

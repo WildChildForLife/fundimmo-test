@@ -66,7 +66,7 @@ router.get('/pays/:page?', (req, res, next) => {
 
 }).get('/pays/id/:id', (req, res) => {
     pool.getConnection().then(connection => {
-        connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
+         connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
             if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
                 connection.end();
                 res.sendStatus(404);
@@ -80,9 +80,9 @@ router.get('/pays/:page?', (req, res, next) => {
                 access_key: config.weatherAccessKey,
                 query: row[0].name
             };
-            axios.get(config.weatherApi, {params}).then((body) => {
-                res.json(countriesHandler.mergeWeather(row[0], body.data));
-                //res.json(countriesHandler.parseCountries(row));
+
+            axios.get(config.weatherApi, {params}).then((weather) => {
+                res.json(countriesHandler.mergeWeather(row[0], weather.data));
             });
         }).catch(err => {
             connection.end();
@@ -90,37 +90,74 @@ router.get('/pays/:page?', (req, res, next) => {
         });
     });
 
-}).get('/import-countries', (req, res) => {
-    let connection;
-    try {
-        pool.getConnection().then(connection => {
-            axios.get(config.countriesRestApi).then((body) => {
-                let result = body.data;
-                // Begin transaction to insert in Bulk
-                connection.beginTransaction();
+}).put('/pays/id/:id', (req, httpResponse) => {
+    pool.getConnection().then( connection => {
+        connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
+            if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
+                res.sendStatus(404);
+                connection.end();
 
-                let dataToInsert = countriesHandler.importCountries(result);
+                return;
+            }
 
-                try {
-                    // FLUSH TABLE
-                    connection.query('TRUNCATE TABLE countries');
-                    connection.query('ALTER TABLE countries AUTO_INCREMENT = 1');
-                    const res = connection.batch('INSERT INTO countries (' + Object.keys(countriesHandler.schema.countries).join(', ') + ') VALUES (?' + ', ?'.repeat(Object.keys(countriesHandler.schema.countries).length - 1) +')', dataToInsert);
+            // If nothing has been updated, return the non-updated data from the base, just like a Get !
+            if (Object.entries(req.body).length === 0) {
+                res.json(countriesHandler.parseCountries(row));
+                connection.end();
 
-                    connection.commit();
-                } catch (err) {
-                    connection.rollback();
-                    //handle error
+                return;
+            }
+
+            let update = countriesHandler.getDataToUpdate(req.body);
+            let countryId = row[0].id;
+            update.values.push(countryId);
+
+            connection.query("UPDATE countries SET " + update.keys + " WHERE id = ?", update.values).then((res) => {
+                // If the country has been updated, redirect to show the updated country + its weather
+                if (res.affectedRows == 1) {
+                    httpResponse.redirect('/pays/id/' + countryId);
                 }
+            });
 
-                return res.json();
+            res.json(response);
+        }).catch(err => {
+            connection.end();
+            throw err;
+        });
+    });
+
+}).get('/import-countries', (httpRequest, httpResponse) => {
+    pool.getConnection().then(connection => {
+         axios.get(config.countriesRestApi).then(body => {
+            let result = body.data;
+
+            let dataToInsert = countriesHandler.parseDataToInsert(result);
+
+            // FLUSH TABLE
+            connection.query('TRUNCATE TABLE countries').then((res) => {
+                connection.query('ALTER TABLE countries AUTO_INCREMENT = 1').then((res) => {
+                    let keys = Object.keys(countriesHandler.schema.countries).join(', ');
+                    let values = '?' + ', ?'.repeat(Object.keys(countriesHandler.schema.countries).length - 1);
+
+                    connection.batch('INSERT INTO countries (' + keys + ') VALUES (' + values +')', dataToInsert).then((res) => {
+                        httpResponse.json(res);
+                    }).catch(err => {
+                        connection.end();
+                        throw err;
+                    });
+                }).catch(err => {
+                    connection.end();
+                    throw err;
+                });
+            }).catch(err => {
+                connection.end();
+                throw err;
             });
         });
-    } catch (err) {
+    }).catch(err => {
+        connection.end();
         throw err;
-    } finally {
-        if (connection) return connection.end();
-    }
+    });
 });
 
 app.use('/', router);

@@ -36,9 +36,15 @@ const schema = {
     }
 };
 
-let prepareInsert = [];
-
-const countriesHandler = (listCountries) => {
+/**
+ * Parse and validate countrie's data to insert them in a mariadb query
+ *
+ * @param listCountries
+ *
+ * @returns {Array}
+ */
+const parseDataToInsert = (listCountries) => {
+    let prepareInsert = [];
     // List of countries
     listCountries.forEach((country) => {
         let prepareSubInsert = [];
@@ -80,6 +86,12 @@ const countriesHandler = (listCountries) => {
     return prepareInsert;
 };
 
+/**
+ * Parse data country to parse strings into Arrays & Objects
+ *
+ * @param listCountries
+ * @returns {Array}
+ */
 const parseCountries = (listCountries) => {
     let result = [];
     listCountries.forEach((country) => {
@@ -100,9 +112,46 @@ const parseCountries = (listCountries) => {
     return result;
 };
 
+/**
+ * Merge the countrie's weather into the countries data
+ *
+ * @param country
+ * @param weather
+ *
+ * @returns {Array}
+ */
 const mergeWeather = (country, weather) => {
     country['weather'] = weather;
+
     return country;
 };
 
-module.exports = { schema, importCountries: countriesHandler, parseCountries, mergeWeather };
+/**
+ * Validate the body's request according to the allowed fields and delete all the non-valid fields
+ * then return the built string for MariaDB keys and the related values
+ *
+ *
+ * @param body
+ *
+ * @returns {{keys: string, values: Array}}
+ */
+const getDataToUpdate = (body) => {
+    let values = [];
+
+    Object.entries(body).forEach((line) => {
+        let key = line[0];
+        let value = line[1];
+
+        if (!Object.keys(schema.countries).includes(key)) {
+            delete body[key];
+        } else {
+            values.push(value)
+        }
+    });
+
+    let keys = Object.keys(body).join(' = ?, ') + ' = ?';
+
+    return { keys: keys, values: values };
+};
+
+module.exports = { schema, parseDataToInsert, parseCountries, mergeWeather, getDataToUpdate };
