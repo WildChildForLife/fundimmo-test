@@ -4,6 +4,7 @@
   "description": "NodeJS Test for FundImmo",
   "main": "server.js",
   "dependencies": {
+    "axios": "^0.19.0",
     "express": "^4.16.3",
     "fetch": "^1.1.0",
     "mariadb": "^2.1.1"

@@ -1,7 +1,7 @@
 const express                     = require('express');
 const app                         = express();
 const bodyParser                  = require('body-parser');
-const fetch                       = require('fetch');
+const axios                       = require('axios');
 const mariadb                     = require('mariadb');
 
 const countriesHandler            = require('./utils/countries-handler');
@@ -34,8 +34,6 @@ router.get('/pays/:page?', (req, res, next) => {
     }
     page = parseInt(page);
 
-    console.log('NOOOOOON');
-
     // Define the offset according to the requested page number
     let offset = (page === 1) ? 0 : (page * config.limitGetCountries);
 
@@ -43,7 +41,10 @@ router.get('/pays/:page?', (req, res, next) => {
         // id >= OFFSET is more powerful than using ORDER BY LIMIT OFFSET : https://mariadb.com/kb/en/library/pagination-optimization/
         connection.query("SELECT * FROM countries WHERE id >= ? LIMIT ?", [offset, config.limitGetCountries]).then((rows) => {
             if (rows.length === 0) {
+                connection.end();
                 res.sendStatus(404);
+
+                return;
             }
 
             res.json(countriesHandler.parseCountries(rows));
@@ -54,10 +55,35 @@ router.get('/pays/:page?', (req, res, next) => {
     });
 
 }).get('/pays/:name', (req, res) => {
-    console.log(req.params.name);
     pool.getConnection().then(connection => {
-        connection.query('SELECT * FROM countries c WHERE c.name LIKE ?', req.params.name + '%').then((rows) => {
-            res.json(countriesHandler.parseCountries(rows));
+        connection.query('SELECT * FROM countries c WHERE c.name LIKE ?', req.params.name + '%').then((row) => {
+            res.json(countriesHandler.parseCountries(row));
+        }).catch(err => {
+            connection.end();
+            throw err;
+        });
+    });
+
+}).get('/pays/id/:id', (req, res) => {
+    pool.getConnection().then(connection => {
+        connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
+            if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
+                connection.end();
+                res.sendStatus(404);
+
+                return;
+            }
+
+            row = countriesHandler.parseCountries(row);
+
+            let params = {
+                access_key: config.weatherAccessKey,
+                query: row[0].name
+            };
+            axios.get(config.weatherApi, {params}).then((body) => {
+                res.json(countriesHandler.mergeWeather(row[0], body.data));
+                //res.json(countriesHandler.parseCountries(row));
+            });
         }).catch(err => {
             connection.end();
             throw err;
@@ -68,8 +94,8 @@ router.get('/pays/:page?', (req, res, next) => {
     let connection;
     try {
         pool.getConnection().then(connection => {
-            fetch.fetchUrl(config.countriesRestApi, (error, meta, body) => {
-                let result = JSON.parse(body.toString());
+            axios.get(config.countriesRestApi).then((body) => {
+                let result = body.data;
                 // Begin transaction to insert in Bulk
                 connection.beginTransaction();
 

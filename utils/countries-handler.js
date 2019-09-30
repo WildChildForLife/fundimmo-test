@@ -100,4 +100,9 @@ const parseCountries = (listCountries) => {
     return result;
 };
 
-module.exports = { schema, importCountries: countriesHandler, parseCountries };
+const mergeWeather = (country, weather) => {
+    country['weather'] = weather;
+    return country;
+};
+
+module.exports = { schema, importCountries: countriesHandler, parseCountries, mergeWeather };
