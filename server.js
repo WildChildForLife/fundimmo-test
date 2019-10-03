@@ -14,6 +14,8 @@ const pool                        = mariadb.createPool({
     database: 'fundimmo',
     connectionLimit: 10
 });
+const logger                      = require('./utils/logger')(pool);
+const numberLastLogs              = 20;
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -22,6 +24,9 @@ app.use(bodyParser.json());
 let port = process.env.PORT || 3000;
 
 let router = express.Router();
+
+// Log all the requests
+app.use(logger);
 
 router.get('/pays/:page?', (req, res, next) => {
     // If no page has been set, redirect to page 1
@@ -42,52 +47,64 @@ router.get('/pays/:page?', (req, res, next) => {
         connection.query("SELECT * FROM countries WHERE id >= ? LIMIT ?", [offset, config.limitGetCountries]).then((rows) => {
             if (rows.length === 0) {
                 connection.end();
-                res.sendStatus(404);
+                res.status(404).send("Page not found");
 
                 return;
             }
 
+            connection.end();
             res.json(countriesHandler.parseCountries(rows));
         }).catch(err => {
             connection.end();
             throw err;
         });
+    }).catch(err => {
+        throw err;
     });
 
 }).get('/pays/:name', (req, res) => {
     pool.getConnection().then(connection => {
         connection.query('SELECT * FROM countries c WHERE c.name LIKE ?', req.params.name + '%').then((row) => {
+            if (row.length === 0) {
+                res.status(404).send("Country not found");
+            }
+            connection.end();
             res.json(countriesHandler.parseCountries(row));
         }).catch(err => {
             connection.end();
             throw err;
         });
+    }).catch(err => {
+        throw err;
     });
 
 }).get('/pays/id/:id', (req, res) => {
     pool.getConnection().then(connection => {
          connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
-            if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
-                connection.end();
-                res.sendStatus(404);
+             connection.end();
+             if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
+
+                res.status(404).send("Country not found");
 
                 return;
-            }
+             }
 
-            row = countriesHandler.parseCountries(row);
+             row = countriesHandler.parseCountries(row);
 
-            let params = {
-                access_key: config.weatherAccessKey,
-                query: row[0].name
-            };
+             let params = {
+                 access_key: config.weatherAccessKey,
+                 query: row[0].name
+             };
 
-            axios.get(config.weatherApi, {params}).then((weather) => {
-                res.json(countriesHandler.mergeWeather(row[0], weather.data));
-            });
+             axios.get(config.weatherApi, {params}).then((weather) => {
+                 res.json(countriesHandler.mergeWeather(row[0], weather.data));
+             });
         }).catch(err => {
             connection.end();
             throw err;
         });
+    }).catch(err => {
+        throw err;
     });
 
 }).put('/pays/id/:id', (req, httpResponse) => {
@@ -113,19 +130,42 @@ router.get('/pays/:page?', (req, res, next) => {
             update.values.push(countryId);
 
             connection.query("UPDATE countries SET " + update.keys + " WHERE id = ?", update.values).then((res) => {
+                connection.end();
                 // If the country has been updated, redirect to show the updated country + its weather
                 if (res.affectedRows == 1) {
                     httpResponse.redirect('/pays/id/' + countryId);
                 }
+            }).catch(err => {
+                connection.end();
+                throw err;
             });
-
-            res.json(response);
         }).catch(err => {
             connection.end();
             throw err;
         });
+    }).catch(err => {
+        throw err;
     });
 
+}).get('/logs', (req, res) => {
+    pool.getConnection().then(connection => {
+        connection.query('SELECT * FROM logs l ORDER BY l.id DESC LIMIT 0,?', numberLastLogs).then((rows) => {
+            if (typeof rows[0] === "undefined" || typeof rows[0].id === "undefined") {
+                connection.end();
+                res.status(404).send("No logs yet.");
+
+                return;
+            }
+
+            connection.end();
+            res.json(rows);
+        }).catch(err => {
+            connection.end();
+            throw err;
+        });
+    }).catch(err => {
+        throw err;
+    });
 }).get('/import-countries', (httpRequest, httpResponse) => {
     pool.getConnection().then(connection => {
          axios.get(config.countriesRestApi).then(body => {
@@ -140,6 +180,7 @@ router.get('/pays/:page?', (req, res, next) => {
                     let values = '?' + ', ?'.repeat(Object.keys(countriesHandler.schema.countries).length - 1);
 
                     connection.batch('INSERT INTO countries (' + keys + ') VALUES (' + values +')', dataToInsert).then((res) => {
+                        connection.end();
                         httpResponse.json(res);
                     }).catch(err => {
                         connection.end();
@@ -155,7 +196,6 @@ router.get('/pays/:page?', (req, res, next) => {
             });
         });
     }).catch(err => {
-        connection.end();
         throw err;
     });
 });

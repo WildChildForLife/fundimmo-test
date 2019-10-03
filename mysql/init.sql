@@ -37,7 +37,7 @@ CREATE TABLE `countries` (
 DROP TABLE IF EXISTS `logs`;
 CREATE TABLE `logs` (
     `id` int(11) NOT NULL AUTO_INCREMENT,
-    `createdAt` datetime NOT NULL,
+    `createdAt` varchar(255) NULL,
     `ip` varchar(255) NOT NULL,
     `type` varchar(10) NOT NULL,
     `url` varchar(255) NOT NULL,
