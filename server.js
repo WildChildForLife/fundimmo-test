@@ -169,9 +169,7 @@ router.get('/pays/:page?', (req, res, next) => {
 }).get('/import-countries', (httpRequest, httpResponse) => {
     pool.getConnection().then(connection => {
          axios.get(config.countriesRestApi).then(body => {
-            let result = body.data;
-
-            let dataToInsert = countriesHandler.parseDataToInsert(result);
+            let dataToInsert = countriesHandler.parseDataToInsert(body.data);
 
             // FLUSH TABLE
             connection.query('TRUNCATE TABLE countries').then((res) => {
