@@ -110,17 +110,16 @@ router.get('/pays/:page?', (req, res, next) => {
 }).put('/pays/id/:id', (req, httpResponse) => {
     pool.getConnection().then( connection => {
         connection.query('SELECT * FROM countries c WHERE c.id = ?', req.params.id).then((row) => {
+            connection.end();
             if (typeof row[0] === "undefined" || typeof row[0].name === "undefined") {
-                res.sendStatus(404);
-                connection.end();
+                httpResponse.status(404).send("Country not found");
 
                 return;
             }
 
-            // If nothing has been updated, return the non-updated data from the base, just like a Get !
+            // If no field has been sent for update, return the non-updated data from the base, just like a Get !
             if (Object.entries(req.body).length === 0) {
-                res.json(countriesHandler.parseCountries(row));
-                connection.end();
+                httpResponse.json(countriesHandler.parseCountries(row));
 
                 return;
             }
