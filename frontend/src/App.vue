@@ -1,17 +1,15 @@
 <template>
-  <div>
-    <b-input-group class="search-input mt-3 mb-3 col-5" size="sm">
+  <div class="mt-3">
+    <b-input-group align="center" class="search-input mt-3 mb-3 col-5" size="sm">
       <b-form-input v-on:keyup="filterCountries" v-model="keyword" placeholder="Country name" type="text"></b-form-input>
-      <b-input-group-text slot="append">
-        <b-btn class="p-0" :disabled="!keyword" variant="link" size="sm" @click="keyword = ''">
-          <i class="fa fa-remove"></i>
-        </b-btn>
-      </b-input-group-text>
     </b-input-group>
     <b-table
       striped
       hover
       responsive
+      id="list-countries"
+      align="center"
+      :busy="isBusy"
       :items="countries"
       :fields="fields"
       :keyword="keyword"
@@ -21,6 +19,14 @@
         <span v-html="data.value"></span>
       </template>
     </b-table>
+    <b-pagination
+      :per-page="20"
+      :total-rows="240"
+      v-model="page"
+      v-on:input="fetchCountries(page)"
+      align="center"
+      aria-controls="list-countries"
+    ></b-pagination>
   </div>
 </template>
 
@@ -31,7 +37,7 @@
     name: 'app',
     data () {
       return {
-        stickyHeader: false,
+        stickyHeader: true,
         noCollapse: true,
         fields: [
           {
@@ -149,8 +155,10 @@
           }*/
         ],
         keyword: '',
+        isBusy: false,
         countries: null,
-        countriesCopy: null
+        countriesCopy: null,
+        page: 1
       }
     },
     methods: {
@@ -195,13 +203,18 @@
       transformFlag(value, key, item) {
         return '<img src="' + value + '" title="' + item.name + '" width="100px">';
       },
+      fetchCountries(page) {
+        this.isBusy = true;
+        axios.get('http://localhost:3000/pays/' + page).then((response) => {
+          this.countries = response.data;
+          this.countriesCopy = response.data;
+          this.isBusy = false;
+          this.keyword = '';
+        });
+      }
     },
     mounted () {
-      axios
-        .get('http://localhost:3000/pays/8').then((response) => {
-        this.countries = response.data;
-        this.countriesCopy = response.data;
-      });
+      this.fetchCountries(this.page);
     }
   }
 </script>
@@ -236,12 +249,16 @@
 
   table {
     width: 300px !important;
-    margin: auto;
     margin-top: 0px;
   }
 
   .search-input {
     width: 400px;
     margin: auto;
+  }
+
+  .b-table-sticky-header {
+    overflow-y: auto;
+    max-height: 716px;
   }
 </style>
