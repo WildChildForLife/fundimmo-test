@@ -1,6 +1,6 @@
 version: '3'
 services:
-  web:
+  backend:
     build: backend/
     command: npm run dev
     volumes:
@@ -27,6 +27,18 @@ services:
       - 8888:8080
     depends_on:
       - db
+  frontend:
+    build: frontend/
+    volumes:
+      - ./frontend:/usr/app/
+      - /usr/app/node_modules
+    working_dir: /usr/app
+    ports:
+      - "8081:80"
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: development
 
 volumes:
   dbdata:

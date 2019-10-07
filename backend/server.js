@@ -28,6 +28,12 @@ let router = express.Router();
 // Log all the requests
 app.use(logger);
 
+// Allow CORS for communication through different servers (FRONT & BACK)
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", "http://localhost:8082");
+    next();
+});
+
 router.get('/pays/:page?', (req, res, next) => {
     // If no page has been set, redirect to page 1
     let page = (req.params.page === undefined) ? 1 : req.params.page;
@@ -45,14 +51,13 @@ router.get('/pays/:page?', (req, res, next) => {
     pool.getConnection().then(connection => {
         // id >= OFFSET is more powerful than using ORDER BY LIMIT OFFSET : https://mariadb.com/kb/en/library/pagination-optimization/
         connection.query("SELECT * FROM countries WHERE id >= ? LIMIT ?", [offset, config.limitGetCountries]).then((rows) => {
+            connection.end();
             if (rows.length === 0) {
-                connection.end();
                 res.status(404).send("Page not found");
 
                 return;
             }
-
-            connection.end();
+            
             res.json(countriesHandler.parseCountries(rows));
         }).catch(err => {
             connection.end();
