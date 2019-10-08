@@ -10,6 +10,6 @@ const database         = {
   connectionLimit: 10
 };
 
-const limitGetCountries = 20;
+const countriesPerPage = 20;
 
-module.exports = { countriesRestApi, database, limitGetCountries, weatherApi, weatherAccessKey };
+module.exports = { countriesRestApi, database, countriesPerPage, weatherApi, weatherAccessKey };

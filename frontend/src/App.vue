@@ -1,56 +1,75 @@
 <template>
-  <div class="container">
-    <template v-if="showTable === true">
-      <div class="table-container mt-3" v-show="showTable">
-      <b-input-group align="center" class="search-input mt-3 mb-3 col-5" size="sm">
-        <b-form-input v-on:keyup="filterCountries" v-model="keyword" placeholder="Country name" type="text"></b-form-input>
-      </b-input-group>
-      <b-table
-        striped
-        hover
-        responsive
-        id="list-countries"
-        align="center"
-        :busy="isBusy"
-        :items="countries"
-        :fields="fields"
-        :keyword="keyword"
-        :sticky-header="stickyHeader"
-        :no-border-collapse="noCollapse"
-        @row-clicked="showDetails" >
-        <template v-slot:cell()="data">
-          <span v-html="data.value"></span>
-        </template>
-      </b-table>
-      <b-pagination
-        :per-page="20"
-        :total-rows="240"
-        v-model="page"
-        v-on:input="fetchCountries(page)"
-        align="center"
-        aria-controls="list-countries"
-      ></b-pagination>
-    </div>
-    </template>
-    <template v-else>
-      <div class="infos" align="center">
-        <div class="flag" v-html="countriesInfos.flag"></div>
-        <div class="name"><b>{{ countriesInfos.name }}</b></div>
-        <dl class="row">
-          <template v-for="(value, name, index) in countriesInfos">
-            <dt>{{ name + ' : ' }}</dt>
-            <dd v-html="value"></dd>
-          </template>
-        </dl>
-        <button class="close" v-on:click="hideDetails"><img src="src/assets/close.svg" title="close" /></button>
+  <div class="container-fluid">
+    <div class="row">
+      <div class="aside-container left col-sm-3">
+        <aside>
+          <h2>Last 5 seen countries</h2>
+          <ul class="list-countries">
+            <template v-for="(value, name, index) in lastSeenCountries">
+              <li class="side-country">
+                <img :src="value.flag" :alt="value.name" class="image-aside" />
+                <h4 class="aside-title">{{ value.name }}</h4>
+              </li>
+            </template>
+          </ul>
+        </aside>
       </div>
-      <div class="randomPictures">
-        <h2>Some random pictures about {{ countriesInfos.name }} : </h2>
-        <div class="pictures" >
-          <div class="row"v-html="pictures"></div>
+      <div class="left col-sm-9">
+        <template v-if="showTable === true">
+          <div class="table-container mt-3" v-show="showTable">
+          <b-input-group align="center" class="search-input mt-3 mb-3 col-5" size="sm">
+            <b-form-input v-on:keyup="filterCountries" v-model="keyword" placeholder="Country name" type="text"></b-form-input>
+          </b-input-group>
+          <b-table
+            striped
+            hover
+            responsive
+            id="list-countries"
+            align="center"
+            :busy="isBusy"
+            :items="countries"
+            :fields="fields"
+            :keyword="keyword"
+            :sticky-header="stickyHeader"
+            :no-border-collapse="noCollapse"
+            @row-clicked="showDetails" >
+            <template v-slot:cell()="data">
+              <span v-html="data.value"></span>
+            </template>
+          </b-table>
+          <b-pagination
+            :per-page="20"
+            :total-rows="240"
+            v-model="page"
+            v-on:input="fetchCountries(page)"
+            align="center"
+            aria-controls="list-countries"
+          ></b-pagination>
         </div>
+        </template>
+        <template v-else>
+          <div class="infos" align="center">
+            <div class="flag" v-html="countriesInfos.flag"></div>
+            <div class="name"><b>{{ countriesInfos.name }}</b></div>
+            <dl class="row">
+              <template v-for="(value, name, index) in countriesInfos">
+                <dt>{{ name + ' : ' }}</dt>
+                <dd v-html="value"></dd>
+              </template>
+            </dl>
+            <button class="close" v-on:click="hideDetails">
+              <img src="src/assets/close.svg" title="close" />
+            </button>
+          </div>
+          <div class="randomPictures">
+            <h2>Some random pictures about {{ countriesInfos.name }} : </h2>
+            <div class="pictures" >
+              <div class="row"v-html="pictures"></div>
+            </div>
+          </div>
+        </template>
       </div>
-    </template>
+    </div>
   </div>
 </template>
 
@@ -200,6 +219,7 @@
         page: 1,
         showTable: true,
         countriesInfos: {},
+        lastSeenCountries: [],
         pictures: '',
         stickyHeader: true,
         noCollapse: true,
@@ -287,7 +307,15 @@
           }
 
           this.countriesInfos[rowKey] = formattedValue;
+
         });
+
+        if (!this.lastSeenCountries.some(e => e.name === row.name)) {
+          this.lastSeenCountries.push(row);
+          if (this.lastSeenCountries.length > 5) {
+            this.lastSeenCountries.shift();
+          }
+        }
       },
       hideDetails() {
         this.showTable = true;
@@ -430,7 +458,36 @@
     overflow: hidden;
   }
 
+  @media screen and (max-width: 576px) {
+    .pictures img {
+      width: 100%;
+    }
+  }
+
   h2 {
     margin: 30px 0;
+  }
+
+  @media screen and (max-width: 700px) {
+    .aside-container {
+      display:none;
+    }
+  }
+
+  .image-aside {
+    width: 50px;
+    float: left;
+    margin-right: 12px;
+  }
+
+  .aside-title {
+    font-size: 18px;
+    float: left;
+    line-height: 35px;
+  }
+
+  .side-country {
+    display: block !important;
+    height: 46px;
   }
 </style>

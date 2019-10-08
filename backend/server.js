@@ -6,14 +6,8 @@ const mariadb                     = require('mariadb');
 
 const countriesHandler            = require('./utils/countries-handler');
 const config                      = require('./utils/config');
-const pool                        = mariadb.createPool({
-    host: 'db',
-    user: 'root',
-    password: 'secured',
-    port: 3306,
-    database: 'fundimmo',
-    connectionLimit: 10
-});
+
+const pool                        = mariadb.createPool(config.database);
 const logger                      = require('./utils/logger')(pool);
 const numberLastLogs              = 20;
 
@@ -30,7 +24,7 @@ app.use(logger);
 
 // Allow CORS for communication through different servers (FRONT & BACK)
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:8082");
+    res.header("Access-Control-Allow-Origin", "http://localhost:8080");
     next();
 });
 
@@ -46,18 +40,18 @@ router.get('/pays/:page?', (req, res, next) => {
     page = parseInt(page);
 
     // Define the offset according to the requested page number
-    let offset = (page === 1) ? 0 : (page * config.limitGetCountries);
+    let offset = (page === 1) ? 0 : (page * config.countriesPerPage);
 
     pool.getConnection().then(connection => {
         // id >= OFFSET is more powerful than using ORDER BY LIMIT OFFSET : https://mariadb.com/kb/en/library/pagination-optimization/
-        connection.query("SELECT * FROM countries WHERE id >= ? LIMIT ?", [offset, config.limitGetCountries]).then((rows) => {
+        connection.query("SELECT * FROM countries WHERE id >= ? LIMIT ?", [offset, config.countriesPerPage]).then((rows) => {
             connection.end();
             if (rows.length === 0) {
                 res.status(404).send("Page not found");
 
                 return;
             }
-            
+
             res.json(countriesHandler.parseCountries(rows));
         }).catch(err => {
             connection.end();
@@ -70,11 +64,13 @@ router.get('/pays/:page?', (req, res, next) => {
 }).get('/pays/:name', (req, res) => {
     pool.getConnection().then(connection => {
         connection.query('SELECT * FROM countries c WHERE c.name LIKE ?', req.params.name + '%').then((row) => {
+            connection.end();
             if (row.length === 0) {
                 res.status(404).send("Country not found");
             }
-            connection.end();
             res.json(countriesHandler.parseCountries(row));
+
+            return;
         }).catch(err => {
             connection.end();
             throw err;
