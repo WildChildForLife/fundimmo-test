@@ -4,7 +4,7 @@
 
 ## Description : 
 
-Ce projet est une réalisation d'un input tel qu'il est décrit dans l'énnoncé envoyé par mail par M. Jeremie Benmoussa.
+Ce projet est la réalisation du projet tel qu'il est décrit dans l'énnoncé envoyé par mail par M. Jeremie Benmoussa.
 
 ------
 
