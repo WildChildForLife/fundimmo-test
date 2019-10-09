@@ -1,0 +1,191 @@
+{
+	"info": {
+		"_postman_id": "5d6dce06-feed-47d8-a088-484cab8dea20",
+		"name": "Fundimmo",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Import Countries",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/import-countries",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"import-countries"
+					]
+				},
+				"description": "Import the countries from an API to the DB"
+			},
+			"response": []
+		},
+		{
+			"name": "Get page number 3 from the list of countries",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/pays/3",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"pays",
+						"3"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all countries that starts with \"mo\"",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:3000/pays/mo",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"pays",
+						"mo"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get country by id 152",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost:3000/pays/id/152",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"pays",
+						"id",
+						"152"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Edit any available data for country id 152",
+			"request": {
+				"method": "PUT",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": [
+						{
+							"key": "region",
+							"value": "Africaaaaa",
+							"type": "text"
+						},
+						{
+							"key": "alpha2Code",
+							"value": "MA",
+							"type": "text"
+						},
+						{
+							"key": "callingCodes",
+							"value": "[\"211\"]",
+							"type": "text"
+						},
+						{
+							"key": "fdfsdf",
+							"value": "fdsfsd",
+							"type": "text"
+						}
+					]
+				},
+				"url": {
+					"raw": "http://localhost:3000/pays/id/152",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"pays",
+						"id",
+						"152"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get the last 20 logs",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [
+					{
+						"key": "Content-Type",
+						"name": "Content-Type",
+						"value": "application/x-www-form-urlencoded",
+						"type": "text"
+					}
+				],
+				"body": {
+					"mode": "urlencoded",
+					"urlencoded": []
+				},
+				"url": {
+					"raw": "http://localhost:3000/logs",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "3000",
+					"path": [
+						"logs"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"protocolProfileBehavior": {}
+}

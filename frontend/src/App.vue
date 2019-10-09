@@ -1,6 +1,7 @@
 <template>
   <div class="container-fluid">
     <div class="row">
+      <!-- ASIDE BAR FOR 5 RECENT SEEN COUNTRIES -->
       <div class="aside-container left col-sm-3">
         <aside>
           <h2>Last 5 seen countries</h2>
@@ -15,6 +16,7 @@
         </aside>
       </div>
       <div class="left col-sm-9">
+        <!-- TABLE FOR LIST OF COUNTRIES -->
         <template v-if="showTable === true">
           <div class="table-container mt-3" v-show="showTable">
           <b-input-group align="center" class="search-input mt-3 mb-3 col-5" size="sm">
@@ -47,6 +49,7 @@
           ></b-pagination>
         </div>
         </template>
+        <!-- DETAILS ABOUT THE CLICKED COUNTRY -->
         <template v-else>
           <div class="infos" align="center">
             <div class="flag" v-html="countriesInfos.flag"></div>
@@ -58,7 +61,7 @@
               </template>
             </dl>
             <button class="close" v-on:click="hideDetails">
-              <img src="src/assets/close.svg" title="close" />
+              <img src="https://image.flaticon.com/icons/svg/151/151882.svg" title="close" />
             </button>
           </div>
           <div class="randomPictures">
@@ -74,143 +77,7 @@
 </template>
 
 <script>
-  import axios from 'axios';
-  import Unsplash, { toJson } from 'unsplash-js';
-
-  const fieldsDefinition = [
-    {
-      key: 'id',
-      label: 'id',
-      sortable: true
-    },
-    {
-      key: 'name',
-      label: 'Name',
-      sortable: true,
-      stickyColumn: true,
-    },
-    {
-      key: 'flag',
-      sortable: false,
-      formatter: 'transformFlag',
-    },
-    {
-      key: 'capital',
-      sortable: false,
-    },
-    {
-      key: 'region',
-      sortable: false,
-    },
-    {
-      key: 'subregion',
-      sortable: false,
-    },
-    {
-      key: 'area',
-      sortable: false,
-    },
-    {
-      key: 'topLevelDomain',
-      sortable: false,
-      formatter: 'arrayToList',
-      disabled: true,
-    },
-    {
-      key: 'alpha2Code',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'alpha3Code',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'callingCodes',
-      sortable: false,
-      formatter: 'arrayToList',
-      disabled: true,
-    },
-    {
-      key: 'altSpellings',
-      sortable: false,
-      formatter: 'arrayToList',
-      disabled: true,
-    },
-    {
-      key: 'population',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'latlng',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'demonym',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'timezones',
-      sortable: false,
-      formatter: 'arrayToList',
-      disabled: true,
-
-    },
-    {
-      key: 'gini',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'borders',
-      sortable: false,
-      formatter: 'arrayToList',
-      disabled: true,
-    },
-    {
-      key: 'nativeName',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'numericCode',
-      sortable: false,
-      disabled: true,
-    },
-    {
-      key: 'currencies',
-      sortable: false,
-      formatter: 'arrayObjectToList',
-      disabled: true,
-    },
-    {
-      key: 'languages',
-      sortable: false,
-      formatter: 'arrayObjectToList',
-      disabled: true,
-    },
-    {
-      key: 'translations',
-      sortable: false,
-      formatter: 'arrayObjectToList',
-      disabled: true,
-    },
-    {
-      key: 'regionalBlocs',
-      sortable: false,
-      formatter: 'arrayObjectToList',
-      disabled: true,
-    },
-    {
-      key: 'cioc',
-      sortable: false,
-      disabled: true,
-    }
-  ];
+  import { methodsDefinition, fieldsDefinition } from './methodsDefinition';
 
   export default {
     name: 'app',
@@ -230,97 +97,7 @@
         countriesCopy: null
       }
     },
-    methods: {
-      filterCountries() {
-        this.countries = this.keyword
-          ? this.countriesCopy.filter(item => item.name.includes(this.keyword))
-          : this.countriesCopy;
-      },
-      arrayToList(value, key, item) {
-        if (!item) return;
-        if (value.length === 1) return value.toString();
-        let stringToReturn = '';
-        value.forEach((value) => {
-          stringToReturn += '- ' + value + '<br />';
-        });
-
-        return stringToReturn;
-      },
-      arrayObjectToList(value, key, item) {
-        if (!item || value === '') return;
-
-        let stringToReturn = '';
-        // List of objects
-        if (!Array.isArray(value)) {
-          stringToReturn = '';
-          Object.keys(value).forEach((key) => {
-            stringToReturn += '<span style="color: blue" >' + key.charAt(0).toUpperCase() + key.slice(1) + ' </span>: ' + value[key] + '<br />';
-          });
-        // List of Array Objects
-        } else if (value.length > 0){
-          stringToReturn = value.length > 1 ? '******<br />' : '';
-          value.forEach((obj) => {
-            Object.keys(obj).forEach((key) => {
-              stringToReturn += '<span style="color: blue" >' + key.charAt(0).toUpperCase() + key.slice(1) + ' </span>: ' + obj[key] + '<br />';
-            });
-            stringToReturn += value.length > 1 ? '******<br />' : '';
-          });
-        }
-
-        return stringToReturn;
-      },
-      transformFlag(value, key, item) {
-        return '<img src="' + value + '" title="' + item.name + '" width="100px">';
-      },
-      fetchCountries(page) {
-        this.isBusy = true;
-        axios.get('http://localhost:3000/pays/' + page).then((response) => {
-          this.countries = response.data;
-          this.countriesCopy = response.data;
-          this.isBusy = false;
-          this.keyword = '';
-        });
-      },
-      showDetails(row) {
-        this.showTable = false;
-        this.pictures = '';
-        const unsplash = new Unsplash({
-          applicationId: "bea201b3cd30ca48485007857a3d64ad85d70012422b48f1abcdea35053626b5",
-          secret: "9ed93019e2c49c56168b7837d80e49a4315228a660a3f61674cf2c242293e31f"
-        });
-
-        unsplash.search.photos(row.name, 1, 12).then(toJson).then((response) => {
-          response.results.forEach((value) => {
-            this.pictures += '<div class="col-sm-3"><img src="' + value.urls.small + '" title="' + row.name + '" /></div>';
-          });
-        });
-
-        Object.entries(row).forEach((value) => {
-          let rowKey = value[0];
-          let rowValue = value[1];
-          let formattedValue = rowValue;
-          let filteredField = fieldsDefinition.filter(item => item.key === rowKey);
-          let filteredObject = (filteredField.length > 0) ? fieldsDefinition.filter(item => item.key === rowKey)[0] : null;
-          let formatter = (filteredObject !== null && 'formatter' in filteredObject) ? filteredObject.formatter : null;
-          if (formatter !== null) {
-            formattedValue = this[formatter](rowValue, 1, row);
-          }
-
-          this.countriesInfos[rowKey] = formattedValue;
-
-        });
-
-        if (!this.lastSeenCountries.some(e => e.name === row.name)) {
-          this.lastSeenCountries.push(row);
-          if (this.lastSeenCountries.length > 5) {
-            this.lastSeenCountries.shift();
-          }
-        }
-      },
-      hideDetails() {
-        this.showTable = true;
-      }
-    },
+    methods: methodsDefinition,
     mounted () {
       if (this.page === undefined) {
         this.page = 1;

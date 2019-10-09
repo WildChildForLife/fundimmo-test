@@ -29,16 +29,12 @@ services:
       - db
   frontend:
     build: frontend/
-    volumes:
-      - ./frontend:/usr/app/
-      - /usr/app/node_modules
-    working_dir: /usr/app
     ports:
-      - "8081:80"
+      - "8080:80"
     depends_on:
       - backend
     environment:
-      NODE_ENV: development
+      NODE_ENV: production
 
 volumes:
   dbdata:

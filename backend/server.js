@@ -24,7 +24,14 @@ app.use(logger);
 
 // Allow CORS for communication through different servers (FRONT & BACK)
 app.use((req, res, next) => {
-    res.header("Access-Control-Allow-Origin", "http://localhost:8080");
+    var allowedOrigins = ['http://127.0.0.1:8080', 'http://localhost:8080'];
+    var origin = req.headers.origin;
+    if(allowedOrigins.indexOf(origin) > -1){
+        res.setHeader('Access-Control-Allow-Origin', origin);
+    }
+    res.header('Access-Control-Allow-Methods', 'GET, PUT');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+    res.header('Access-Control-Allow-Credentials', true);
     next();
 });
 
