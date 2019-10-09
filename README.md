@@ -42,7 +42,7 @@ $ docker-compose up --build --force-recreate --remove-orphans
 Dés que les serveurs ont finis d'être buildés et lancés, vous pourrez alors consulter le front via http://localhost:8080.
 Le Backend est quant à lui accessible via http://localhost:3000. 
 
-**/I\ ATTENTION** : Au premier lancement, le serveur vérifiera l'existance des pays dans la BD, dans le cas où ils n'existent pas, il fera appel à l'API '/import-countries' pour la consommation de l'API d'import des pays dans la BD. Il suffira alors réactualiser la page une nouvelle fois pour voir les données s'afficher.
+**/I\ ATTENTION** : Au premier lancement, le serveur vérifiera l'existance des pays dans la BD, dans le cas où ils n'existent pas, il fera appel à l'API '/import-countries' pour la consommation de l'API d'import des pays dans la BD. Il suffira alors réactualiser la page une nouvelle fois pour voir les données provenant de la base de données s'afficher.
 
 ## Postman :
 
