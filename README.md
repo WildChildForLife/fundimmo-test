@@ -46,7 +46,7 @@ Le Backend est quant à lui accessible via http://localhost:3000.
 
 ## Postman :
 
-Les enveloppes Postman se situent à la racine du projet : /postman/Fundimmo.postman_collection.json et contient toutes les enveloppes d'API's du serveur pour pouvoir les tester juste en appuyant sur "Send".
+Les enveloppes Postman se situent à la racine du projet : /postman/Fundimmo.postman_collection.json et contiennent toutes les enveloppes d'API's du serveur pour pouvoir les tester juste en appuyant sur "Send".
 
 ------
 
