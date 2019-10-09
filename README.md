@@ -15,7 +15,7 @@ Ce projet est la réalisation du projet tel qu'il est décrit dans l'énnoncé e
 Le projet a été réalisé avec le composant Docker qui a permis l'instanciation de 4 serveurs Linux indépendants : 
 
 1. **Backend** - Exposition des API's et de contrôle de gestion - Réalisé en NodeJS / Express - Port 3000
-2. **DB** - Serveur MySQL pour le stockage des données - Serveur dockerisé - Port 3306
+2. **DB** - Serveur MariaDB pour le stockage des données - Serveur dockerisé - Port 3306
 3. **Adminer** - Serveur NGinx nous permettant de piloter la BD grâce à l'interface UI - Serveur dockerisé - Port 8888
 4. **FrontEnd** - Interface utilisateur permettant de naviguer entre les différents pays - VueJS WebPack avec un Reverse Proxy Nginx pour l'exposition des fichiers statics générés par WebPack - VueJS = Port 3000, Nginx reverse 3000 to 8080)
 
